@@ -9,8 +9,14 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const search = searchParams.get('search') || '';
+  const filter = searchParams.get('filter') || 'all';
+  const page = searchParams.get('page') || '1';
+
   try {
-    const res = await fetch(`${APPS_SCRIPT_URL}?token=${TOKEN}`);
+    const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&search=${encodeURIComponent(search)}&filter=${filter}&page=${page}&pageSize=500`;
+    const res = await fetch(url);
     const data = await res.json();
     return NextResponse.json(data);
   } catch (err) {

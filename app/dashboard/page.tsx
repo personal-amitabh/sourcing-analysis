@@ -102,7 +102,10 @@ export default function Dashboard() {
   const [sortCol, setSortCol] = useState('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 50;
+  const PAGE_SIZE = 500;
+  const [totalRows, setTotalRows] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -112,79 +115,27 @@ export default function Dashboard() {
     if (status === 'authenticated') fetchData();
   }, [status]);
 
-  const fetchData = async () => {
+  const fetchData = async (searchVal = search, filterVal = filterType, pageVal = page) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/sheet');
+      const params = new URLSearchParams({ search: searchVal, filter: filterVal, page: String(pageVal) });
+      const res = await fetch(`/api/sheet?${params}`);
       const json = await res.json();
       setRows(json.data || []);
+      setTotalRows(json.total || 0);
+      setTotalPages(json.totalPages || 1);
+      if (json.stats) setStats(json.stats);
     } catch (e) {
       console.error(e);
     }
     setLoading(false);
   };
 
-  // ── Stats ────────────────────────────────────────────────────────
-  const stats = useMemo(() => {
-    if (!rows.length) return null;
+  // Stats now come from server
 
-    const uniqueParts = new Set(rows.map(r => r.Item)).size;
-    const uniqueSuppliers = new Set(rows.map(r => r.Supplier)).size;
-
-    // Group by Item to determine single vs multi
-    const partSuppliers: Record<string, Set<string>> = {};
-    rows.forEach(r => {
-      if (!partSuppliers[r.Item]) partSuppliers[r.Item] = new Set();
-      partSuppliers[r.Item].add(r.Supplier);
-    });
-
-    const singleSourced = Object.values(partSuppliers).filter(s => s.size === 1).length;
-    const multiSourced = Object.values(partSuppliers).filter(s => s.size > 1).length;
-
-    // Multi-source depth breakdown
-    const depthCount: Record<number, number> = {};
-    Object.values(partSuppliers).filter(s => s.size > 1).forEach(s => {
-      depthCount[s.size] = (depthCount[s.size] || 0) + 1;
-    });
-
-    const depthBreakdown = Object.entries(depthCount)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([n, count]) => ({
-        suppliers: Number(n),
-        count,
-        pct: Math.round((count / multiSourced) * 100),
-      }));
-
-    const enrichedCount = rows.filter(r => r['Part Description']).length;
-
-    return { uniqueParts, uniqueSuppliers, singleSourced, multiSourced, depthBreakdown, enrichedCount, totalRows: rows.length };
-  }, [rows]);
-
-  // ── Filtered + sorted rows ────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let r = [...rows];
-    if (search) {
-      const q = search.toLowerCase();
-      r = r.filter(row =>
-        row.Item?.toLowerCase().includes(q) ||
-        row.Supplier?.toLowerCase().includes(q) ||
-        row.Plant?.toString().includes(q) ||
-        row['Part Description']?.toLowerCase().includes(q)
-      );
-    }
-    if (filterType === 'single') r = r.filter(row => !row['Supplier Share %']);
-    if (filterType === 'multi') r = r.filter(row => !!row['Supplier Share %']);
-    if (sortCol) {
-      r.sort((a, b) => {
-        const av = a[sortCol] ?? '', bv = b[sortCol] ?? '';
-        return sortDir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
-      });
-    }
-    return r;
-  }, [rows, search, filterType, sortCol, sortDir]);
-
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  // Data comes paginated from server
+  const filtered = rows;
+  const paginated = rows;
 
   const handleSort = (col: string) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -358,7 +309,8 @@ export default function Dashboard() {
             </svg>
             <input
               value={searchInput}
-              onChange={e => { setSearchInput(e.target.value); setPage(1); }}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { setPage(1); fetchData(searchInput, filterType, 1); } }}
               placeholder="Search parts, suppliers..."
               style={{
                 width: '100%', padding: '8px 12px 8px 36px',
@@ -370,10 +322,20 @@ export default function Dashboard() {
               onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
           </div>
+          <button onClick={() => { setPage(1); fetchData(searchInput, filterType, 1); }} style={{
+            padding: '8px 16px', borderRadius: '8px', fontSize: '13px',
+            background: 'var(--accent)', color: 'white', border: 'none',
+            cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500,
+          }}>Search</button>
+          <button onClick={() => { setPage(1); fetchData(searchInput, filterType, 1); }} style={{
+            padding: '8px 16px', borderRadius: '8px', fontSize: '13px',
+            background: 'var(--accent)', color: 'white', border: 'none',
+            cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500,
+          }}>Search</button>
 
           {/* Filter buttons */}
           {(['all', 'single', 'multi'] as const).map(f => (
-            <button key={f} onClick={() => { setFilterType(f); setPage(1); }} style={{
+            <button key={f} onClick={() => { setFilterType(f); setPage(1); fetchData(search, f, 1); }} style={{
               padding: '7px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
               border: '1px solid',
               borderColor: filterType === f ? 'var(--accent)' : 'var(--border)',
@@ -417,7 +379,7 @@ export default function Dashboard() {
 
         {/* Results count */}
         <div style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-          Showing {((page - 1) * PAGE_SIZE + 1).toLocaleString()}–{Math.min(page * PAGE_SIZE, filtered.length).toLocaleString()} of {filtered.length.toLocaleString()} rows
+          Showing {((page - 1) * PAGE_SIZE + 1).toLocaleString()}–{Math.min(page * PAGE_SIZE, totalRows).toLocaleString()} of {totalRows.toLocaleString()} rows
         </div>
 
         {/* Table */}
@@ -489,13 +451,13 @@ export default function Dashboard() {
                 Page {page} of {totalPages}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{
+                <button onClick={() => { const p = Math.max(1, page - 1); setPage(p); fetchData(search, filterType, p); }} disabled={page === 1} style={{
                   padding: '6px 14px', borderRadius: '6px', fontSize: '12px',
                   background: 'transparent', border: '1px solid var(--border)',
                   color: page === 1 ? 'var(--text-muted)' : 'var(--text-secondary)',
                   cursor: page === 1 ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)',
                 }}>← Prev</button>
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{
+                <button onClick={() => { const p = Math.min(totalPages, page + 1); setPage(p); fetchData(search, filterType, p); }} disabled={page === totalPages} style={{
                   padding: '6px 14px', borderRadius: '6px', fontSize: '12px',
                   background: 'transparent', border: '1px solid var(--border)',
                   color: page === totalPages ? 'var(--text-muted)' : 'var(--text-secondary)',
