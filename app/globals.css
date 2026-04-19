@@ -9,25 +9,25 @@
   --font-body: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 
-  --bg: #0a0c10;
-  --bg-card: #111318;
-  --bg-card-hover: #161b24;
-  --border: #1e2533;
-  --border-light: #252d3d;
-  --accent: #f0a500;
-  --accent-dim: rgba(240, 165, 0, 0.12);
-  --accent-glow: rgba(240, 165, 0, 0.25);
-  --text-primary: #e8eaf0;
-  --text-secondary: #8892a4;
-  --text-muted: #4a5568;
-  --green: #22c55e;
-  --green-dim: rgba(34, 197, 94, 0.12);
-  --blue: #3b82f6;
-  --blue-dim: rgba(59, 130, 246, 0.12);
-  --red: #ef4444;
-  --red-dim: rgba(239, 68, 68, 0.12);
-  --purple: #a855f7;
-  --purple-dim: rgba(168, 85, 247, 0.12);
+  --bg: #f5f6fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f2f8;
+  --border: #e2e6f0;
+  --border-light: #d0d5e8;
+  --accent: #c47f00;
+  --accent-dim: rgba(196, 127, 0, 0.08);
+  --accent-glow: rgba(196, 127, 0, 0.2);
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --green: #16a34a;
+  --green-dim: rgba(22, 163, 74, 0.08);
+  --blue: #2563eb;
+  --blue-dim: rgba(37, 99, 235, 0.08);
+  --red: #dc2626;
+  --red-dim: rgba(220, 38, 38, 0.08);
+  --purple: #7c3aed;
+  --purple-dim: rgba(124, 58, 237, 0.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,13 +41,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
@@ -56,11 +54,6 @@ body {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-
-@keyframes pulse-border {
-  0%, 100% { border-color: var(--accent); }
-  50% { border-color: transparent; }
 }
 
 .fade-up { animation: fadeUp 0.4s ease forwards; }
