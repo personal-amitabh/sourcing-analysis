@@ -92,7 +92,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
   const [filterType, setFilterType] = useState<'all' | 'single' | 'multi'>('all');
   const [sortCol, setSortCol] = useState('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -352,8 +357,8 @@ export default function Dashboard() {
               <path d="m21 21-4.35-4.35" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             <input
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              value={searchInput}
+              onChange={e => { setSearchInput(e.target.value); setPage(1); }}
               placeholder="Search parts, suppliers..."
               style={{
                 width: '100%', padding: '8px 12px 8px 36px',
