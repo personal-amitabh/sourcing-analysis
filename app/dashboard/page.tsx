@@ -279,7 +279,7 @@ export default function Dashboard() {
               Multi-Source Depth Breakdown
             </div>
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-              {stats.depthBreakdown.map(({ suppliers, count, pct }: { suppliers: number, count: number, pct: number }) => (
+              {stats.depthBreakdown.map(({ suppliers, count, pct }: { suppliers: number; count: number; pct: number }) => (
                 <div key={suppliers} style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{suppliers} suppliers</span>
@@ -318,12 +318,12 @@ export default function Dashboard() {
               onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
           </div>
-          <button onClick={() => { setPage(1); fetchData(searchInput, filterType, 1); }} style={{
+          <button onClick={() => { setSearch(searchInput); setPage(1); }} style={{
             padding: '8px 16px', borderRadius: '8px', fontSize: '13px',
             background: 'var(--accent)', color: 'white', border: 'none',
             cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500,
           }}>Search</button>
-          <button onClick={() => { setPage(1); fetchData(searchInput, filterType, 1); }} style={{
+          <button onClick={() => { setSearch(searchInput); setPage(1); }} style={{
             padding: '8px 16px', borderRadius: '8px', fontSize: '13px',
             background: 'var(--accent)', color: 'white', border: 'none',
             cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 500,
@@ -331,7 +331,7 @@ export default function Dashboard() {
 
           {/* Filter buttons */}
           {(['all', 'single', 'multi'] as const).map(f => (
-            <button key={f} onClick={() => { setFilterType(f); setPage(1); fetchData(search, f, 1); }} style={{
+            <button key={f} onClick={() => { setFilterType(f); setPage(1); }} style={{
               padding: '7px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
               border: '1px solid',
               borderColor: filterType === f ? 'var(--accent)' : 'var(--border)',
@@ -447,13 +447,13 @@ export default function Dashboard() {
                 Page {page} of {totalPages}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { const p = Math.max(1, page - 1); setPage(p); fetchData(search, filterType, p); }} disabled={page === 1} style={{
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{
                   padding: '6px 14px', borderRadius: '6px', fontSize: '12px',
                   background: 'transparent', border: '1px solid var(--border)',
                   color: page === 1 ? 'var(--text-muted)' : 'var(--text-secondary)',
                   cursor: page === 1 ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)',
                 }}>← Prev</button>
-                <button onClick={() => { const p = Math.min(totalPages, page + 1); setPage(p); fetchData(search, filterType, p); }} disabled={page === totalPages} style={{
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{
                   padding: '6px 14px', borderRadius: '6px', fontSize: '12px',
                   background: 'transparent', border: '1px solid var(--border)',
                   color: page === totalPages ? 'var(--text-muted)' : 'var(--text-secondary)',
