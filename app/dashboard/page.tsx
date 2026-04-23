@@ -279,7 +279,7 @@ export default function Dashboard() {
               Multi-Source Depth Breakdown
             </div>
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-              {stats.depthBreakdown.map(({ suppliers, count, pct }) => (
+              {stats.depthBreakdown.map(({ suppliers, count, pct }: { suppliers: number, count: number, pct: number }) => (
                 <div key={suppliers} style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{suppliers} suppliers</span>
