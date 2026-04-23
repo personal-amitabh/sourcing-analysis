@@ -115,16 +115,12 @@ export default function Dashboard() {
     if (status === 'authenticated') fetchData();
   }, [status]);
 
-  const fetchData = async (searchVal = search, filterVal = filterType, pageVal = page) => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ search: searchVal, filter: filterVal, page: String(pageVal) });
-      const res = await fetch(`/api/sheet?${params}`);
+      const res = await fetch('/api/sheet');
       const json = await res.json();
       setRows(json.data || []);
-      setTotalRows(json.total || 0);
-      setTotalPages(json.totalPages || 1);
-      if (json.stats) setStats(json.stats);
     } catch (e) {
       console.error(e);
     }
@@ -310,7 +306,7 @@ export default function Dashboard() {
             <input
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { setPage(1); fetchData(searchInput, filterType, 1); } }}
+              onKeyDown={e => { if (e.key === 'Enter') { setSearch(searchInput); setPage(1); } }}
               placeholder="Search parts, suppliers..."
               style={{
                 width: '100%', padding: '8px 12px 8px 36px',
