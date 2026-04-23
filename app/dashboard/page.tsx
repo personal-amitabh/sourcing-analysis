@@ -227,8 +227,19 @@ export default function Dashboard() {
       );
     }
 
+    // Apply sorting
+    if (sortCol) {
+      r.sort((a: Row, b: Row) => {
+        const av = a[sortCol] ?? '';
+        const bv = b[sortCol] ?? '';
+        return sortDir === 'asc'
+          ? String(av).localeCompare(String(bv))
+          : String(bv).localeCompare(String(av));
+      });
+    }
+
     return r;
-  }, [rows, search, filterType, tileFilter]);
+  }, [rows, search, filterType, tileFilter, sortCol, sortDir]);
 
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
